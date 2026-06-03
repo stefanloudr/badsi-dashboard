@@ -272,7 +272,16 @@ async function apiWrite(key,payload){
     return j.ok;
   }catch(e){setSS('err','Offline');return false;}
 }
-async function saveCur(){const k=mk();if(!k)return;if(!S.data[k])S.data[k]=em();await apiWrite(k,S.data[k]);}
+let _saveTimer=null;let _saving=false;
+async function saveCur(){
+  const k=mk();if(!k)return;
+  if(!S.data[k])S.data[k]=em();
+  if(_saving)return;
+  _saving=true;
+  try{await apiWrite(k,S.data[k]);}finally{
+    setTimeout(()=>{_saving=false;},2000);
+  }
+}
 
 // ── NAV ──
 document.querySelectorAll('.nav-item[data-page]').forEach(btn=>btn.addEventListener('click',()=>setPage(btn.dataset.page)));
