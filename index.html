@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&family=Manrope:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 :root{--bg:#f5f4f0;--surface:#fff;--surface2:#eeede8;--surface3:#e5e4de;--border:rgba(0,0,0,0.07);--border-s:rgba(0,0,0,0.13);--text:#0f0f0e;--muted:#6b6b65;--dim:#a8a8a0;--accent:#1a1a18;--lime:#c8f135;--blue:#1877f2;--purple:#9333ea;--red:#ee1d52;--green:#16a34a;--danger:#dc2626;--r:14px;--rs:8px;--sw:230px}
 *{box-sizing:border-box;margin:0;padding:0}html,body{height:100%}
@@ -39,11 +40,12 @@ body{font-family:'Manrope',sans-serif;background:var(--bg);color:var(--text);fon
 .page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:32px;gap:16px;flex-wrap:wrap}
 .page-title{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:var(--text);letter-spacing:-.03em;line-height:1.1}
 .page-period{font-size:12px;color:var(--muted);margin-top:5px;font-weight:500}
-.header-actions{display:flex;gap:8px;align-items:center}
+.header-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Manrope',sans-serif;transition:all .15s;border:none}
 .btn-dark{background:var(--accent);color:#fff}.btn-dark:hover{background:#2d2d2a}
 .btn-outline{background:none;border:1px solid var(--border-s);color:var(--muted)}.btn-outline:hover{background:var(--surface2);color:var(--text)}
 .btn-lime{background:var(--lime);color:var(--accent)}.btn-lime:hover{background:#b8e020}
+.btn-danger{background:none;border:1px solid rgba(220,38,38,0.3);color:var(--danger)}.btn-danger:hover{background:rgba(220,38,38,0.08)}
 .kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:28px}
 .kpi-card{background:var(--surface);border-radius:var(--r);padding:18px 16px;border:1px solid var(--border);position:relative;overflow:hidden}
 .kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--kc,var(--accent));border-radius:3px 3px 0 0}
@@ -52,7 +54,7 @@ body{font-family:'Manrope',sans-serif;background:var(--bg);color:var(--text);fon
 .kpi-delta{font-size:11px;margin-top:6px;font-family:'DM Mono',monospace;font-weight:500}
 .d-up{color:var(--green)}.d-down{color:var(--danger)}.d-none{color:var(--dim)}
 .section{margin-bottom:28px}
-.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:12px}
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:12px;flex-wrap:wrap}
 .sec-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
 .tbl-wrap{background:var(--surface);border-radius:var(--r);border:1px solid var(--border);overflow:hidden}
 .tbl-scroll{overflow-x:auto}
@@ -60,6 +62,8 @@ table{width:100%;border-collapse:collapse;font-size:13px}
 thead th{padding:11px 14px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:var(--surface2);border-bottom:1px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none;transition:background .1s}
 thead th:hover{background:var(--surface3)}
 thead th.sort-on{color:var(--accent)}
+thead th.no-sort{cursor:default}
+thead th.no-sort:hover{background:var(--surface2)}
 tbody tr{border-bottom:1px solid var(--border);transition:background .1s}
 tbody tr:last-child{border-bottom:none}
 tbody tr:hover{background:var(--surface2)}
@@ -72,49 +76,51 @@ tfoot td{padding:11px 14px;background:var(--surface2);border-top:1px solid var(-
 .post-lnk:hover{text-decoration:underline}
 .top-row td:first-child{position:relative}
 .top-row td:first-child::before{content:'★';position:absolute;left:-2px;top:50%;transform:translateY(-50%);font-size:8px;color:var(--lime)}
-.upload-area{border:2px dashed var(--border-s);border-radius:var(--r);padding:32px 24px;text-align:center;cursor:pointer;transition:all .2s;background:var(--surface)}
+.del-btn{background:none;border:none;cursor:pointer;color:var(--dim);font-size:15px;padding:2px 6px;border-radius:4px;transition:all .15s;line-height:1}
+.del-btn:hover{color:var(--danger);background:rgba(220,38,38,0.08)}
+.upload-area{border:2px dashed var(--border-s);border-radius:var(--r);padding:28px 24px;text-align:center;cursor:pointer;transition:all .2s;background:var(--surface)}
 .upload-area:hover,.upload-area.drag{border-color:var(--accent);background:var(--surface2)}
 .upload-area input{display:none}
-.up-icon{font-size:32px;margin-bottom:10px}
-.up-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:5px}
+.up-icon{font-size:28px;margin-bottom:8px}
+.up-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;margin-bottom:4px}
 .up-hint{font-size:12px;color:var(--muted)}
-.up-cols{margin-top:10px;font-size:11px;color:var(--dim);font-family:'DM Mono',monospace}
+.up-cols{margin-top:8px;font-size:11px;color:var(--dim);font-family:'DM Mono',monospace}
 .cmp-controls{display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap}
 .cmp-controls select{padding:8px 12px;border-radius:8px;border:1px solid var(--border-s);background:var(--surface);font-family:'Manrope',sans-serif;font-size:13px;color:var(--text);cursor:pointer}
 .vs-badge{font-family:'Syne',sans-serif;font-size:11px;font-weight:800;color:var(--dim);letter-spacing:.1em}
-.cmp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
-.cmp-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px}
-.cmp-metric{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+.cmp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+.cmp-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px}
+.cmp-metric{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
 .cmp-row{display:flex;justify-content:space-between;align-items:flex-end}
 .cmp-period{font-size:10px;color:var(--dim);margin-bottom:3px}
-.cmp-val{font-family:'DM Mono',monospace;font-size:20px;font-weight:500;color:var(--text)}
-.cmp-pct{padding:3px 9px;border-radius:20px;font-size:12px;font-family:'DM Mono',monospace;font-weight:500;align-self:center}
+.cmp-val{font-family:'DM Mono',monospace;font-size:18px;font-weight:500;color:var(--text)}
+.cmp-pct{padding:3px 8px;border-radius:20px;font-size:11px;font-family:'DM Mono',monospace;font-weight:500;align-self:center}
 .cmp-pct.up{background:#f0fdf4;color:var(--green)}.cmp-pct.down{background:#fef2f2;color:var(--danger)}.cmp-pct.flat{background:var(--surface2);color:var(--dim)}
-.fol-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
-.fol-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;text-align:center}
-.fol-plat{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:8px}
-.fol-count{font-family:'DM Mono',monospace;font-size:30px;font-weight:500;letter-spacing:-.03em}
-.fol-delta{font-size:12px;font-family:'DM Mono',monospace;margin-top:5px}
 .inp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
 .inp-grp{display:flex;flex-direction:column;gap:5px}
 .inp-lbl{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
 .inp-fld{background:var(--surface);border:1px solid var(--border-s);border-radius:var(--rs);padding:9px 10px;font-size:13px;font-family:'DM Mono',monospace;color:var(--text);transition:border-color .15s;width:100%}
 .inp-fld:focus{outline:none;border-color:var(--accent)}
 .plat-block{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:14px}
-.plat-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.plat-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px}
 .plat-pill{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.04em}
 .pill-fb{background:#eff6ff;color:var(--blue)}.pill-ig{background:#fdf4ff;color:var(--purple)}.pill-tt{background:#fff1f2;color:var(--red)}.pill-meta{background:#eff6ff;color:var(--blue)}.pill-tiktok{background:#fff1f2;color:var(--red)}
 .data-status{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--dim)}
 .dot{width:6px;height:6px;border-radius:50%}.dot-ok{background:var(--green)}.dot-no{background:var(--dim)}
-.empty{text-align:center;padding:60px 20px;color:var(--muted)}
-.empty-icon{font-size:40px;margin-bottom:12px}
-.empty-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-bottom:6px;color:var(--text)}
+.note-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px}
+.note-textarea{width:100%;min-height:80px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--rs);padding:10px 12px;font-size:13px;font-family:'Manrope',sans-serif;color:var(--text);resize:vertical;transition:border-color .15s}
+.note-textarea:focus{outline:none;border-color:var(--accent)}
+.empty{text-align:center;padding:48px 20px;color:var(--muted)}
+.empty-icon{font-size:36px;margin-bottom:10px}
+.empty-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:6px;color:var(--text)}
 .empty-sub{font-size:13px;color:var(--muted)}
 .loading-overlay{position:fixed;inset:0;background:rgba(245,244,240,0.9);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;gap:12px}
 .loading-spinner{width:36px;height:36px;border:3px solid var(--border-s);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .loading-text{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--muted)}
-@media print{.sidebar{display:none!important}.main{padding:20px}.no-print{display:none!important}.page{display:block!important}.tbl-wrap{border:1px solid #ccc}}
+.upload-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:600px){.upload-row{grid-template-columns:1fr}}
+@media print{.sidebar{display:none!important}.main{padding:20px}.no-print{display:none!important}.page{display:block!important}}
 ::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:4px}
 </style>
 </head>
@@ -196,7 +202,6 @@ tfoot td{padding:11px 14px;background:var(--surface2);border-top:1px solid var(-
   <div class="page" id="page-ads">
     <div class="page-header">
       <div><div class="page-title">Paid Ads</div><div class="page-period" id="ads-period">—</div></div>
-      <div class="header-actions no-print"><button class="btn btn-dark" onclick="saveAds()">✓ Save</button></div>
     </div>
     <div id="ads-content"></div>
   </div>
@@ -214,7 +219,7 @@ tfoot td{padding:11px 14px;background:var(--surface2);border-top:1px solid var(-
 const API_URL='https://script.google.com/macros/s/AKfycbwj5qkTC_dAkr272w6krxVSjGgAIRhnxZyjhhPUpiEs-YhyDdWBefjU9y9iq_7ZOa02/exec';
 const SECRET='badsi2026';
 const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
-let S={months:[],cur:0,data:{},clientName:'BADSI',currency:'€'};
+let S={months:[],cur:0,data:{},clientName:'BADSI',currency:'RON'};
 let activePage='overview';
 let sortState={};
 
@@ -222,12 +227,22 @@ function pad(n){return String(n).padStart(2,'0');}
 function mk(){return S.months.length?S.months[S.cur].y+'-'+pad(S.months[S.cur].m):null;}
 function ml(o){return MONTHS[o.m-1]+' '+o.y;}
 function cd(){const k=mk();return k?(S.data[k]||(S.data[k]=em())):null;}
+
 function em(){
   return{
     fb:{posts:[],followers:'',uploaded:false},
     ig:{posts:[],followers:'',uploaded:false},
     tt:{posts:[],followers:'',uploaded:false},
-    ads:{meta:{spend:'',clicks:'',ctr:'',conversions:'',roas:'',uploaded:false},tiktok:{spend:'',clicks:'',ctr:'',conversions:'',roas:'',uploaded:false}}
+    ads:{
+      meta:{campaigns:[],uploaded:false},
+      tiktok:{campaigns:[],uploaded:false}
+    },
+    pageStats:{
+      fb:{totalViews:'',reach:'',interactions:'',watchTime:'',followers:''},
+      ig:{totalViews:'',reach:'',interactions:'',followers:''},
+      tt:{totalViews:'',reach:'',likes:'',followers:''}
+    },
+    notes:''
   };
 }
 
@@ -245,7 +260,7 @@ async function apiRead(){
       S.months.sort((a,b)=>a.y!==b.y?a.y-b.y:a.m-b.m);
       if(S.cur>=S.months.length)S.cur=Math.max(0,S.months.length-1);
       setSS('ok','Synced');
-    }else{setSS('err','Sync error');}
+    }else setSS('err','Sync error');
   }catch(e){setSS('err','Offline');}
 }
 async function apiWrite(key,payload){
@@ -260,7 +275,7 @@ async function apiWrite(key,payload){
 async function saveCur(){const k=mk();if(!k)return;if(!S.data[k])S.data[k]=em();await apiWrite(k,S.data[k]);}
 
 // ── NAV ──
-document.querySelectorAll('.nav-item[data-page]').forEach(btn=>{btn.addEventListener('click',()=>setPage(btn.dataset.page));});
+document.querySelectorAll('.nav-item[data-page]').forEach(btn=>btn.addEventListener('click',()=>setPage(btn.dataset.page)));
 function setPage(p){
   activePage=p;
   document.querySelectorAll('.nav-item[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===p));
@@ -292,7 +307,9 @@ function render(){
 }
 
 function fN(v){const n=parseFloat(v);return isNaN(n)?'—':n.toLocaleString();}
+function fD(v,d=2){const n=parseFloat(v);return isNaN(n)?'—':n.toFixed(d);}
 function short(t){if(!t||t==='—')return'—';const s=t.replace(/\n/g,' ').trim();return s.length>60?s.slice(0,60)+'…':s;}
+function pN(v){if(!v||v==='—'||v==='-')return 0;const n=parseFloat(String(v).replace(/,/g,''));return isNaN(n)?0:n;}
 
 function kpi(label,value,delta,color){
   const dh=delta?`<div class="kpi-delta ${delta.cls}">${delta.txt}</div>`:'';
@@ -312,22 +329,27 @@ function renderOv(){
   const el=document.getElementById('ov-content');
   document.getElementById('ov-title').textContent=(S.clientName||'BADSI')+' — Overview';
   document.getElementById('ov-period').textContent=m?ml(m):'';
-  if(!d){el.innerHTML='<div class="empty"><div class="empty-icon">📊</div><div class="empty-title">No data yet</div><div class="empty-sub">Add a month and upload your CSVs.</div></div>';return;}
+  if(!d){el.innerHTML='<div class="empty"><div class="empty-icon">📊</div><div class="empty-title">No data yet</div><div class="empty-sub">Add a month and upload CSVs.</div></div>';return;}
   const prev=getPrev();
-  const ag=(pl)=>(d[pl].posts||[]).reduce((a,p)=>{['views','reach','reactions','likes','comments','shares','clicks','saves'].forEach(f=>{a[f]=(a[f]||0)+(parseFloat(p[f])||0);});return a;},{});
+  const ag=(pl)=>(d[pl].posts||[]).reduce((a,p)=>{['views','reach','reactions','likes','comments','shares','clicks','saves'].forEach(f=>{a[f]=(a[f]||0)+(pN(p[f]));});return a;},{});
   const fb=ag('fb'),ig=ag('ig'),tt=ag('tt');
-  const aV=fb.views+ig.views+tt.views;
-  const aR=fb.reach+ig.reach+tt.reach;
-  // engagement: FB uses reactions+comments+shares, IG uses likes+comments+shares+saves
-  const aE=(fb.reactions+fb.comments+fb.shares)+(ig.likes+ig.comments+ig.shares+ig.saves)+(tt.reactions+tt.comments+tt.shares);
-  const pag=(prev,pl)=>prev?(prev[pl].posts||[]).reduce((a,p)=>{['views','reach','reactions','likes','comments','shares'].forEach(f=>{a[f]=(a[f]||0)+(parseFloat(p[f])||0);});return a;},[]):null;
+  const aV=fb.views+ig.views+tt.views,aR=fb.reach+ig.reach+tt.reach;
+  const aE=(fb.reactions+fb.comments+fb.shares)+(ig.likes+ig.comments+ig.shares+ig.saves)+(tt.likes+tt.comments+tt.shares);
+  const pag=(prev,pl)=>prev?(prev[pl].posts||[]).reduce((a,p)=>{['views','reach','reactions','likes','comments','shares'].forEach(f=>{a[f]=(a[f]||0)+(pN(p[f]));});return a;},[]):null;
   const pfb=pag(prev,'fb'),pig=pag(prev,'ig'),ptt=pag(prev,'tt');
   const pV=pfb&&pig&&ptt?pfb.views+pig.views+ptt.views:null;
   const pR=pfb&&pig&&ptt?pfb.reach+pig.reach+ptt.reach:null;
-  const pE=pfb&&pig&&ptt?(pfb.reactions+pfb.comments+pfb.shares)+(pig.likes+pig.comments+pig.shares)+(ptt.reactions+ptt.comments+ptt.shares):null;
-  const fol=(pl)=>parseFloat(d[pl].followers)||0;
-  const pfol=(pl)=>prev?parseFloat(prev[pl].followers)||0:null;
-  const folD=(c,p)=>{if(p===null)return null;const diff=c-p;return{cls:diff>=0?'d-up':'d-down',txt:(diff>=0?'+':'')+diff.toLocaleString()+' followers'};};
+  const pE=pfb&&pig&&ptt?(pfb.reactions+pfb.comments+pfb.shares)+(pig.likes+pig.comments+pig.shares)+(ptt.likes+ptt.comments+ptt.shares):null;
+  const fol=(pl)=>pN(d[pl].followers);
+  const pfol=(pl)=>prev?pN(prev[pl].followers):null;
+  const folD=(c,p)=>{if(p===null)return null;const diff=c-p;return{cls:diff>=0?'d-up':'d-down',txt:(diff>=0?'+':'')+diff.toLocaleString()+' vs prev'};};
+
+  // Ads totals
+  const metaCamps=d.ads.meta.campaigns||[];
+  const ttCamps=d.ads.tiktok.campaigns||[];
+  const metaSpend=metaCamps.reduce((s,c)=>s+pN(c.spend),0);
+  const ttSpend=ttCamps.reduce((s,c)=>s+pN(c.spend),0);
+  const totalSpend=metaSpend+ttSpend;
 
   el.innerHTML=`
   <div class="kpi-row">
@@ -340,43 +362,37 @@ function renderOv(){
   </div>
   <div class="section"><div class="sec-hdr"><div class="sec-title">Per platform — organic</div></div>
   <div class="tbl-wrap"><div class="tbl-scroll"><table>
-    <thead><tr><th>Platform</th><th>Views</th><th>Reach</th><th>Reactions/Likes</th><th>Comments</th><th>Shares</th><th>Saves</th><th>Clicks</th><th>Posts</th></tr></thead>
+    <thead><tr><th class="no-sort">Platform</th><th class="no-sort">Views</th><th class="no-sort">Reach</th><th class="no-sort">React/Likes</th><th class="no-sort">Comments</th><th class="no-sort">Shares</th><th class="no-sort">Saves</th><th class="no-sort">Clicks</th><th class="no-sort">Posts</th></tr></thead>
     <tbody>
       ${[['Facebook','fb','#1877f2'],['Instagram','ig','#9333ea'],['TikTok','tt','#ee1d52']].map(([n,pk,col])=>{
         const t=ag(pk);const cnt=(d[pk].posts||[]).length;
-        const eng=pk==='ig'?t.likes:t.reactions;
+        const eng=pk==='ig'?t.likes:pk==='tt'?t.likes:t.reactions;
         return`<tr><td><span style="font-weight:600;color:${col}">${n}</span></td>
           <td class="mono">${fN(t.views)}</td><td class="mono">${fN(t.reach)}</td>
           <td class="mono">${fN(eng)}</td><td class="mono">${fN(t.comments)}</td>
-          <td class="mono">${fN(t.shares)}</td><td class="mono">${pk==='ig'?fN(t.saves):'—'}</td>
-          <td class="mono">${pk==='ig'?'—':fN(t.clicks)}</td><td class="mono">${cnt}</td></tr>`;
+          <td class="mono">${fN(t.shares)}</td>
+          <td class="mono">${pk==='ig'?fN(t.saves):'—'}</td>
+          <td class="mono">${pk!=='ig'&&pk!=='tt'?fN(t.clicks):'—'}</td>
+          <td class="mono">${cnt}</td></tr>`;
       }).join('')}
     </tbody>
   </table></div></div></div>
-  ${adsKpi(d)}`;
-}
-
-function adsKpi(d){
-  const me=d.ads.meta,tk=d.ads.tiktok;
-  if(!me.uploaded&&!tk.uploaded)return'';
-  const ts=(parseFloat(me.spend)||0)+(parseFloat(tk.spend)||0);
-  const tc=(parseFloat(me.clicks)||0)+(parseFloat(tk.clicks)||0);
-  const tv=(parseFloat(me.conversions)||0)+(parseFloat(tk.conversions)||0);
-  return`<div class="section"><div class="sec-hdr"><div class="sec-title">Paid Ads — combined</div></div>
+  ${totalSpend>0?`<div class="section"><div class="sec-hdr"><div class="sec-title">Paid Ads — combined</div></div>
   <div class="kpi-row">
-    ${kpi('Total spend',ts?S.currency+ts.toLocaleString(undefined,{maximumFractionDigits:2}):'—',null,'#f59e0b')}
-    ${kpi('Total clicks',fN(tc),null,'#f59e0b')}
-    ${kpi('Total conversions',fN(tv),null,'#f59e0b')}
-  </div></div>`;
+    ${kpi('Meta spend',metaSpend?S.currency+' '+metaSpend.toLocaleString(undefined,{maximumFractionDigits:2}):'—',null,'#1877f2')}
+    ${kpi('TikTok spend',ttSpend?S.currency+' '+ttSpend.toLocaleString(undefined,{maximumFractionDigits:2}):'—',null,'#ee1d52')}
+    ${kpi('Total spend',totalSpend?S.currency+' '+totalSpend.toLocaleString(undefined,{maximumFractionDigits:2}):'—',null,'#f59e0b')}
+  </div></div>`:''}
+  ${d.notes?`<div class="section"><div class="sec-hdr"><div class="sec-title">Notes</div></div><div class="note-box"><p style="font-size:13px;color:var(--muted);white-space:pre-wrap">${d.notes}</p></div></div>`:''}`;
 }
 
 // ── PLATFORM PAGE ──
 function platCols(plat){
-  if(plat==='ig') return ['views','reach','likes','comments','shares','saves'];
-  if(plat==='tt') return ['views','likes','comments','shares'];
-  return ['views','reach','reactions','comments','shares','clicks'];
+  if(plat==='ig')return['views','reach','likes','comments','shares','saves'];
+  if(plat==='tt')return['views','likes','comments','shares'];
+  return['views','reach','reactions','comments','shares','clicks'];
 }
-function platColLabel(plat,f){
+function platColLabel(f){
   const m={views:'Views',reach:'Reach',reactions:'Reactions',likes:'Likes',comments:'Comments',shares:'Shares',clicks:'Clicks',saves:'Saves'};
   return m[f]||f;
 }
@@ -395,16 +411,15 @@ function renderPlat(plat){
       <label style="cursor:pointer;display:block">
         <div class="up-icon">📁</div>
         <div class="up-title">Upload ${names[plat]} organic CSV</div>
-        <div class="up-hint">Export from Meta Business Suite${plat==='tt'?' or TikTok Analytics':''}</div>
-        <div class="up-cols">${plat==='ig'?'Reads: Description · Permalink · Views · Reach · Likes · Comments · Shares · Saves':plat==='tt'?'Reads: Video title · Video link · Total views · Total likes · Total comments · Total shares':'Reads: Title · Permalink · Views · Reach · Reactions · Comments · Shares · Total clicks'}</div>
+        <div class="up-hint">Export from Meta Business Suite${plat==='tt'?' or TikTok Studio':''}</div>
+        <div class="up-cols">${plat==='ig'?'Description · Permalink · Views · Reach · Likes · Comments · Shares · Saves':plat==='tt'?'Video title · Video link · Total views · Total likes · Total comments · Total shares':'Title · Permalink · Views · Reach · Reactions · Comments · Shares · Total clicks'}</div>
       </label>
     </div>
     <div style="margin-top:16px">
-      <div class="sec-title" style="margin-bottom:12px">Followers</div>
+      <div class="sec-title" style="margin-bottom:10px">Followers</div>
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-        <div class="inp-grp"><div class="inp-lbl">${names[plat]} followers</div>
-        <input class="inp-fld" type="number" placeholder="0" id="fol-${plat}" value="${d?d[plat].followers||'':''}" style="width:140px"></div>
-        <button class="btn btn-dark" style="margin-top:14px" onclick="saveFollowers('${plat}')">✓ Save</button>
+        <input class="inp-fld" type="number" placeholder="0" id="fol-${plat}" value="${d?d[plat].followers||'':''}" style="width:140px">
+        <button class="btn btn-dark" onclick="saveFollowers('${plat}')">✓ Save followers</button>
       </div>
     </div>`;
     return;
@@ -415,56 +430,65 @@ function renderPlat(plat){
   const sk='sort_'+plat;
   if(!sortState[sk])sortState[sk]={col:'views',dir:'desc'};
   const sorted=sortPosts(posts,sortState[sk].col,sortState[sk].dir);
-  const tot=(f)=>posts.reduce((s,p)=>s+(parseFloat(p[f])||0),0);
+  const tot=(f)=>posts.reduce((s,p)=>s+(pN(p[f])),0);
   const thC=(col,lbl)=>{const on=sortState[sk].col===col;const arr=on?(sortState[sk].dir==='desc'?' ↓':' ↑'):'';return`<th class="${on?'sort-on':''}" onclick="sortBy('${plat}','${col}')">${lbl}${arr}</th>`;};
 
   el.innerHTML=`
   <div class="kpi-row">
-    ${cols.map(f=>kpi(platColLabel(plat,f),fN(tot(f)),null,color)).join('')}
+    ${cols.map(f=>kpi(platColLabel(f),fN(tot(f)),null,color)).join('')}
   </div>
-  <div style="margin-bottom:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-    <div class="inp-grp" style="flex-direction:row;align-items:center;gap:8px">
-      <div class="inp-lbl">${names[plat]} followers</div>
-      <input class="inp-fld" type="number" placeholder="0" id="fol-${plat}" value="${d[plat].followers||''}" style="width:130px">
+  <div style="margin-bottom:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+    <div style="display:flex;align-items:center;gap:8px">
+      <span class="inp-lbl">${names[plat]} followers</span>
+      <input class="inp-fld" type="number" placeholder="0" id="fol-${plat}" value="${d[plat].followers||''}" style="width:120px">
       <button class="btn btn-outline" onclick="saveFollowers('${plat}')">✓ Save</button>
     </div>
     <button class="btn btn-outline no-print" onclick="triggerUpload('${plat}')">↑ Replace CSV</button>
-    <button class="btn btn-outline no-print" style="color:var(--danger);border-color:rgba(220,38,38,0.3)" onclick="if(confirm('Clear all ${names[plat]} data for this month?'))clearPlat('${plat}')">✕ Clear</button>
+    <button class="btn btn-danger no-print" onclick="if(confirm('Clear all ${names[plat]} posts for this month?'))clearPlat('${plat}')">✕ Clear</button>
   </div>
   <div class="section">
-    <div class="sec-hdr"><div class="sec-title">Posts — ${posts.length} total <span style="font-size:10px;color:var(--dim);margin-left:6px">★ = top by current sort</span></div></div>
+    <div class="sec-hdr"><div class="sec-title">Posts — ${posts.length} total <span style="font-size:10px;color:var(--dim);margin-left:6px">★ = top · ✕ = remove</span></div></div>
     <div class="tbl-wrap"><div class="tbl-scroll"><table>
-      <thead><tr>
-        ${thC('post','Post')}
-        ${cols.map(f=>thC(f,platColLabel(plat,f))).join('')}
-      </tr></thead>
+      <thead><tr>${thC('post','Post')}${cols.map(f=>thC(f,platColLabel(f))).join('')}<th class="no-sort" style="width:40px"></th></tr></thead>
       <tbody>
-        ${sorted.map((p,i)=>`<tr class="${i===0?'top-row':''}">
-          <td class="post-ttl">
-            <span class="post-ttl-txt" title="${(p.title||'').replace(/\n/g,' ').replace(/"/g,'&quot;')}">${short(p.title||'Untitled')}</span>
-            ${p.permalink?`<a href="${p.permalink}" target="_blank" class="post-lnk">↗ View post</a>`:''}
-          </td>
-          ${cols.map(f=>`<td class="mono">${fN(p[f])}</td>`).join('')}
-        </tr>`).join('')}
+        ${sorted.map((p,i)=>{
+          const origIdx=posts.indexOf(p);
+          return`<tr class="${i===0?'top-row':''}">
+            <td class="post-ttl">
+              <span class="post-ttl-txt" title="${(p.title||'').replace(/\n/g,' ').replace(/"/g,'&quot;')}">${short(p.title||'Untitled')}</span>
+              ${p.permalink?`<a href="${p.permalink}" target="_blank" class="post-lnk">↗ View post</a>`:''}
+            </td>
+            ${cols.map(f=>`<td class="mono">${fN(p[f])}</td>`).join('')}
+            <td><button class="del-btn" onclick="deletePost('${plat}',${origIdx})" title="Remove post">✕</button></td>
+          </tr>`;
+        }).join('')}
       </tbody>
       <tfoot><tr>
         <td style="font-family:'Manrope',sans-serif;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Total</td>
         ${cols.map(f=>`<td>${fN(tot(f))}</td>`).join('')}
+        <td></td>
       </tr></tfoot>
     </table></div></div>
+  </div>
+  <div class="section">
+    <div class="sec-hdr"><div class="sec-title">Monthly notes</div></div>
+    <div class="note-box">
+      <textarea class="note-textarea" placeholder="Add context about this month's ${names[plat]} content..." id="note-${plat}" onchange="updateNote(this.value)">${d.notes||''}</textarea>
+      <button class="btn btn-dark" style="margin-top:8px" onclick="saveNote()">✓ Save note</button>
+    </div>
   </div>`;
 }
 
 function sortBy(plat,col){
   const sk='sort_'+plat;
-  if(sortState[sk]&&sortState[sk].col===col){sortState[sk].dir=sortState[sk].dir==='desc'?'asc':'desc';}
-  else{sortState[sk]={col,dir:'desc'};}
+  if(sortState[sk]&&sortState[sk].col===col)sortState[sk].dir=sortState[sk].dir==='desc'?'asc':'desc';
+  else sortState[sk]={col,dir:'desc'};
   renderPlat(plat);
 }
 function sortPosts(posts,col,dir){
   return[...posts].sort((a,b)=>{
     if(col==='post'){const va=a.title||'',vb=b.title||'';return dir==='asc'?va.localeCompare(vb):vb.localeCompare(va);}
-    const va=parseFloat(a[col])||0,vb=parseFloat(b[col])||0;return dir==='asc'?va-vb:vb-va;
+    return dir==='asc'?pN(a[col])-pN(b[col]):pN(b[col])-pN(a[col]);
   });
 }
 
@@ -474,35 +498,81 @@ function renderAds(){
   document.getElementById('ads-period').textContent=m?ml(m):'';
   const el=document.getElementById('ads-content');
   if(!d){el.innerHTML='<div class="empty">No month selected.</div>';return;}
-  const block=(key,label,pc)=>{
-    const pd=d.ads[key];
-    return`<div class="plat-block">
-      <div class="plat-hdr"><span class="plat-pill ${pc}">${label}</span><span class="data-status"><span class="dot ${pd.uploaded?'dot-ok':'dot-no'}"></span>${pd.uploaded?'Saved':'No data'}</span></div>
-      <div class="inp-grid">
-        <div class="inp-grp"><div class="inp-lbl">Spend (${S.currency})</div><input class="inp-fld" type="number" step="0.01" value="${pd.spend}" placeholder="0.00" onchange="S.data[mk()].ads.${key}.spend=this.value"></div>
-        <div class="inp-grp"><div class="inp-lbl">Clicks</div><input class="inp-fld" type="number" value="${pd.clicks}" placeholder="0" onchange="S.data[mk()].ads.${key}.clicks=this.value"></div>
-        <div class="inp-grp"><div class="inp-lbl">CTR (%)</div><input class="inp-fld" type="number" step="0.01" value="${pd.ctr}" placeholder="0.00" onchange="S.data[mk()].ads.${key}.ctr=this.value"></div>
-        <div class="inp-grp"><div class="inp-lbl">Conversions</div><input class="inp-fld" type="number" value="${pd.conversions}" placeholder="0" onchange="S.data[mk()].ads.${key}.conversions=this.value"></div>
-        <div class="inp-grp"><div class="inp-lbl">ROAS</div><input class="inp-fld" type="number" step="0.01" value="${pd.roas}" placeholder="0.00" onchange="S.data[mk()].ads.${key}.roas=this.value"></div>
-      </div>
-    </div>`;
+
+  const metaCamps=d.ads.meta.campaigns||[];
+  const ttCamps=d.ads.tiktok.campaigns||[];
+  const metaSpend=metaCamps.reduce((s,c)=>s+pN(c.spend),0);
+  const ttSpend=ttCamps.reduce((s,c)=>s+pN(c.spend),0);
+  const metaImpr=metaCamps.reduce((s,c)=>s+pN(c.impressions),0);
+  const ttImpr=ttCamps.reduce((s,c)=>s+pN(c.impressions),0);
+  const metaClicks=metaCamps.reduce((s,c)=>s+pN(c.clicks),0);
+  const ttClicks=ttCamps.reduce((s,c)=>s+pN(c.clicks),0);
+  const metaReach=metaCamps.reduce((s,c)=>s+pN(c.reach),0);
+
+  const campTable=(camps,color,curr)=>{
+    if(!camps.length)return'';
+    return`<div class="tbl-wrap" style="margin-top:12px"><div class="tbl-scroll"><table>
+      <thead><tr>
+        <th class="no-sort">Campaign</th>
+        <th class="no-sort">Spend (${curr})</th>
+        <th class="no-sort">Impressions</th>
+        <th class="no-sort">Clicks</th>
+        <th class="no-sort">CTR</th>
+        <th class="no-sort">Results</th>
+        <th class="no-sort">Cost/result (${curr})</th>
+      </tr></thead>
+      <tbody>
+        ${camps.map(c=>`<tr>
+          <td style="font-weight:500;font-size:12px;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.name||'—'}</td>
+          <td class="mono">${fN(c.spend)}</td>
+          <td class="mono">${fN(c.impressions)}</td>
+          <td class="mono">${fN(c.clicks)}</td>
+          <td class="mono">${c.ctr?fD(c.ctr)+'%':'—'}</td>
+          <td class="mono">${fN(c.results)}</td>
+          <td class="mono">${c.costPerResult?fD(c.costPerResult):'—'}</td>
+        </tr>`).join('')}
+      </tbody>
+      <tfoot><tr>
+        <td style="font-family:'Manrope',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;color:var(--muted)">Total</td>
+        <td>${fN(camps.reduce((s,c)=>s+pN(c.spend),0))}</td>
+        <td>${fN(camps.reduce((s,c)=>s+pN(c.impressions),0))}</td>
+        <td>${fN(camps.reduce((s,c)=>s+pN(c.clicks),0))}</td>
+        <td>—</td><td>—</td><td>—</td>
+      </tr></tfoot>
+    </table></div></div>`;
   };
+
   el.innerHTML=`
-  ${block('meta','Meta Ads','pill-meta')}
-  ${block('tiktok','TikTok Ads','pill-tiktok')}
-  <div class="kpi-row" style="margin-top:20px">
-    ${kpi('Meta spend',d.ads.meta.spend?S.currency+parseFloat(d.ads.meta.spend).toLocaleString(undefined,{maximumFractionDigits:2}):'—',null,'#1877f2')}
-    ${kpi('Meta ROAS',d.ads.meta.roas?parseFloat(d.ads.meta.roas).toFixed(2)+'x':'—',null,'#1877f2')}
-    ${kpi('TikTok spend',d.ads.tiktok.spend?S.currency+parseFloat(d.ads.tiktok.spend).toLocaleString(undefined,{maximumFractionDigits:2}):'—',null,'#ee1d52')}
-    ${kpi('TikTok ROAS',d.ads.tiktok.roas?parseFloat(d.ads.tiktok.roas).toFixed(2)+'x':'—',null,'#ee1d52')}
+  <div class="kpi-row">
+    ${kpi('Meta spend',metaSpend?S.currency+' '+metaSpend.toLocaleString(undefined,{maximumFractionDigits:2}):'—',null,'#1877f2')}
+    ${kpi('Meta impressions',fN(metaImpr),null,'#1877f2')}
+    ${kpi('Meta clicks',fN(metaClicks),null,'#1877f2')}
+    ${kpi('TikTok spend',ttSpend?S.currency+' '+ttSpend.toLocaleString(undefined,{maximumFractionDigits:2}):'—',null,'#ee1d52')}
+    ${kpi('TikTok impressions',fN(ttImpr),null,'#ee1d52')}
+    ${kpi('TikTok clicks',fN(ttClicks),null,'#ee1d52')}
+  </div>
+  <div class="section">
+    <div class="sec-hdr">
+      <div class="sec-title">Meta Ads <span class="data-status" style="margin-left:8px"><span class="dot ${d.ads.meta.uploaded?'dot-ok':'dot-no'}"></span>${d.ads.meta.uploaded?metaCamps.length+' campaigns':'No data'}</span></div>
+      <div class="no-print" style="display:flex;gap:8px">
+        <button class="btn btn-lime" onclick="triggerAdsUpload('meta')">↑ Upload CSV</button>
+        ${d.ads.meta.uploaded?`<button class="btn btn-danger" onclick="clearAds('meta')">✕ Clear</button>`:''}
+      </div>
+    </div>
+    <input type="file" id="upload-ads-meta" accept=".csv" style="display:none" onchange="handleAdsCSV(event,'meta')">
+    ${metaCamps.length?campTable(metaCamps,'#1877f2',S.currency):`<div class="upload-area" onclick="triggerAdsUpload('meta')"><label style="cursor:pointer;display:block"><div class="up-icon">📁</div><div class="up-title">Upload Meta Ads CSV</div><div class="up-cols">Campaign name · Amount spent · Impressions · Reach · Link clicks · CTR · Results · Cost per results</div></label></div>`}
+  </div>
+  <div class="section">
+    <div class="sec-hdr">
+      <div class="sec-title">TikTok Ads <span class="data-status" style="margin-left:8px"><span class="dot ${d.ads.tiktok.uploaded?'dot-ok':'dot-no'}"></span>${d.ads.tiktok.uploaded?ttCamps.length+' campaigns':'No data'}</span></div>
+      <div class="no-print" style="display:flex;gap:8px">
+        <button class="btn btn-lime" onclick="triggerAdsUpload('tiktok')">↑ Upload XLSX</button>
+        ${d.ads.tiktok.uploaded?`<button class="btn btn-danger" onclick="clearAds('tiktok')">✕ Clear</button>`:''}
+      </div>
+    </div>
+    <input type="file" id="upload-ads-tiktok" accept=".xlsx,.csv" style="display:none" onchange="handleAdsCSV(event,'tiktok')">
+    ${ttCamps.length?campTable(ttCamps,'#ee1d52',S.currency):`<div class="upload-area" onclick="triggerAdsUpload('tiktok')"><label style="cursor:pointer;display:block"><div class="up-icon">📁</div><div class="up-title">Upload TikTok Ads XLSX</div><div class="up-cols">Campaign name · Cost · Impressions · Clicks · CTR · Conversions · Cost per conversion</div></label></div>`}
   </div>`;
-}
-async function saveAds(){
-  const k=mk();if(!k)return;if(!S.data[k])S.data[k]=em();
-  S.data[k].ads.meta.uploaded=true;S.data[k].ads.tiktok.uploaded=true;
-  await saveCur();render();
-  const btn=document.querySelector('#page-ads .btn-dark');
-  if(btn){btn.textContent='✓ Saved!';setTimeout(()=>{btn.textContent='✓ Save';},2000);}
 }
 
 // ── COMPARE ──
@@ -514,7 +584,7 @@ function renderCompare(){
   const mA=S.months[ai],mB=S.months[bi];
   const dA=S.data[mA.y+'-'+pad(mA.m)]||em(),dB=S.data[mB.y+'-'+pad(mB.m)]||em();
   const opts=(sel)=>S.months.map((m,i)=>`<option value="${i}" ${i===sel?'selected':''}>${MONTHS[m.m-1].slice(0,3)} ${m.y}</option>`).join('');
-  const ag=(d,pl)=>(d[pl].posts||[]).reduce((a,p)=>{['views','reach','reactions','likes','comments','shares','clicks','saves'].forEach(f=>{a[f]=(a[f]||0)+(parseFloat(p[f])||0);});return a;},{});
+  const ag=(d,pl)=>(d[pl].posts||[]).reduce((a,p)=>{['views','reach','reactions','likes','comments','shares','clicks','saves'].forEach(f=>{a[f]=(a[f]||0)+pN(p[f]);});return a;},{});
   const cc=(label,vA,vB,pre='',suf='')=>{
     const a=parseFloat(vA)||0,b=parseFloat(vB)||0;
     const diff=a-b,pct=b!==0?((diff/b)*100).toFixed(1):null;
@@ -526,6 +596,11 @@ function renderCompare(){
     </div></div>`;
   };
   const fbA=ag(dA,'fb'),fbB=ag(dB,'fb'),igA=ag(dA,'ig'),igB=ag(dB,'ig'),ttA=ag(dA,'tt'),ttB=ag(dB,'tt');
+  const metaSpendA=(dA.ads.meta.campaigns||[]).reduce((s,c)=>s+pN(c.spend),0);
+  const metaSpendB=(dB.ads.meta.campaigns||[]).reduce((s,c)=>s+pN(c.spend),0);
+  const ttSpendA=(dA.ads.tiktok.campaigns||[]).reduce((s,c)=>s+pN(c.spend),0);
+  const ttSpendB=(dB.ads.tiktok.campaigns||[]).reduce((s,c)=>s+pN(c.spend),0);
+
   el.innerHTML=`
   <div class="cmp-controls">
     <select id="cmp-a" onchange="renderCompare()">${opts(ai)}</select>
@@ -536,14 +611,13 @@ function renderCompare(){
     ${cc('Views',fbA.views,fbB.views)}${cc('Reach',fbA.reach,fbB.reach)}${cc('Reactions',fbA.reactions,fbB.reactions)}${cc('Shares',fbA.shares,fbB.shares)}${cc('Followers',dA.fb.followers,dB.fb.followers)}
   </div></div>
   <div class="section"><div class="sec-hdr"><div class="sec-title">Instagram</div></div><div class="cmp-grid">
-    ${cc('Views',igA.views,igB.views)}${cc('Reach',igA.reach,igB.reach)}${cc('Likes',igA.likes,igB.likes)}${cc('Shares',igA.shares,igB.shares)}${cc('Saves',igA.saves,igB.saves)}${cc('Followers',dA.ig.followers,dB.ig.followers)}
+    ${cc('Views',igA.views,igB.views)}${cc('Reach',igA.reach,igB.reach)}${cc('Likes',igA.likes,igB.likes)}${cc('Saves',igA.saves,igB.saves)}${cc('Followers',dA.ig.followers,dB.ig.followers)}
   </div></div>
   <div class="section"><div class="sec-hdr"><div class="sec-title">TikTok</div></div><div class="cmp-grid">
-    ${cc('Views',ttA.views,ttB.views)}${cc('Reach',ttA.reach,ttB.reach)}${cc('Reactions',ttA.reactions,ttB.reactions)}${cc('Shares',ttA.shares,ttB.shares)}${cc('Followers',dA.tt.followers,dB.tt.followers)}
+    ${cc('Views',ttA.views,ttB.views)}${cc('Likes',ttA.likes,ttB.likes)}${cc('Shares',ttA.shares,ttB.shares)}${cc('Followers',dA.tt.followers,dB.tt.followers)}
   </div></div>
   <div class="section"><div class="sec-hdr"><div class="sec-title">Paid Ads</div></div><div class="cmp-grid">
-    ${cc('Meta spend',dA.ads.meta.spend,dB.ads.meta.spend,S.currency)}${cc('Meta ROAS',dA.ads.meta.roas,dB.ads.meta.roas,'','x')}
-    ${cc('TikTok spend',dA.ads.tiktok.spend,dB.ads.tiktok.spend,S.currency)}${cc('TikTok ROAS',dA.ads.tiktok.roas,dB.ads.tiktok.roas,'','x')}
+    ${cc('Meta spend',metaSpendA,metaSpendB,S.currency+' ')}${cc('TikTok spend',ttSpendA,ttSpendB,S.currency+' ')}
   </div></div>`;
 }
 
@@ -556,23 +630,27 @@ function renderSettings(){
       <input class="inp-fld" type="text" value="${S.clientName}" id="set-name" placeholder="e.g. BADSI">
     </div>
     <div class="inp-grp" style="margin-bottom:20px">
-      <div class="inp-lbl">Currency symbol</div>
-      <input class="inp-fld" type="text" value="${S.currency}" id="set-cur" style="max-width:80px" placeholder="€">
+      <div class="inp-lbl">Currency</div>
+      <input class="inp-fld" type="text" value="${S.currency}" id="set-cur" style="max-width:100px" placeholder="RON">
     </div>
     <button class="btn btn-dark" onclick="saveSettings()">✓ Save settings</button>
   </div>
   <div class="plat-block" style="max-width:400px;margin-top:14px">
     <div class="sec-title" style="margin-bottom:10px">Storage</div>
     <div style="font-size:13px;color:var(--muted);margin-bottom:6px">Months stored: <strong style="color:var(--text)">${S.months.length}</strong></div>
-    <div style="font-size:12px;color:var(--dim)">Data is stored in Google Sheets and synced in real time. Anyone with this HTML file sees the same data.</div>
+    <div style="font-size:12px;color:var(--dim)">Data is stored in Google Sheets and synced in real time.</div>
   </div>`;
 }
 function saveSettings(){
   S.clientName=document.getElementById('set-name')?.value||'BADSI';
-  S.currency=document.getElementById('set-cur')?.value||'€';
+  S.currency=document.getElementById('set-cur')?.value||'RON';
   document.getElementById('brandName').textContent=S.clientName;
   renderSettings();
 }
+
+// ── NOTES ──
+function updateNote(val){const k=mk();if(!k)return;if(!S.data[k])S.data[k]=em();S.data[k].notes=val;}
+async function saveNote(){const k=mk();if(!k)return;if(!S.data[k])S.data[k]=em();await saveCur();}
 
 // ── FOLLOWERS ──
 async function saveFollowers(plat){
@@ -582,28 +660,42 @@ async function saveFollowers(plat){
   await saveCur();
 }
 
-// ── CSV PARSING ──
-function triggerUpload(plat){const el=document.getElementById('upload-'+plat);if(el){el.value='';el.click();}}
-async function clearPlat(plat){
+// ── DELETE / CLEAR ──
+async function deletePost(plat,idx){
   const k=mk();if(!k)return;
-  if(!S.data[k])return;
-  S.data[k][plat].posts=[];
-  S.data[k][plat].uploaded=false;
+  S.data[k][plat].posts.splice(idx,1);
   await saveCur();render();
 }
+async function clearPlat(plat){
+  const k=mk();if(!k)return;
+  S.data[k][plat].posts=[];S.data[k][plat].uploaded=false;
+  await saveCur();render();
+}
+async function clearAds(platform){
+  const k=mk();if(!k)return;
+  S.data[k].ads[platform].campaigns=[];S.data[k].ads[platform].uploaded=false;
+  await saveCur();render();
+}
+
+// ── CSV UPLOAD ──
+function triggerUpload(plat){const el=document.getElementById('upload-'+plat);if(el){el.value='';el.click();}}
+function triggerAdsUpload(platform){const el=document.getElementById('upload-ads-'+platform);if(el){el.value='';el.click();}}
 function dragOver(e){e.preventDefault();e.currentTarget.classList.add('drag');}
 function dragLeave(e){e.currentTarget.classList.remove('drag');}
 function dropCSV(e,plat){e.preventDefault();e.currentTarget.classList.remove('drag');const f=e.dataTransfer.files[0];if(f)parseCSVFile(f,plat);}
 function handleCSV(event,plat){const f=event.target.files[0];if(!f)return;parseCSVFile(f,plat);}
+function handleAdsCSV(event,platform){const f=event.target.files[0];if(!f)return;parseAdsFile(f,platform);}
 
 function parseCSVFile(file,plat){
   const reader=new FileReader();
   reader.onload=async function(e){
-    // Strip BOM if present
     let text=e.target.result;
     if(text.charCodeAt(0)===0xFEFF)text=text.slice(1);
     const rows=parseCSVFull(text);
-    let posts; if(plat==='ig') posts=mapIGRows(rows); else if(plat==='tt') posts=mapTTRows(rows); else posts=mapFBRows(rows);
+    let posts;
+    if(plat==='ig')posts=mapIGRows(rows);
+    else if(plat==='tt')posts=mapTTRows(rows);
+    else posts=mapFBRows(rows);
     const k=mk();if(!k)return;
     if(!S.data[k])S.data[k]=em();
     S.data[k][plat].posts=posts;
@@ -613,22 +705,54 @@ function parseCSVFile(file,plat){
   reader.readAsText(file);
 }
 
-// RFC 4180 compliant CSV parser — handles embedded newlines and quotes correctly
+function parseAdsFile(file,platform){
+  const isXLSX=file.name.endsWith('.xlsx')||file.name.endsWith('.xls');
+  if(isXLSX){
+    const reader=new FileReader();
+    reader.onload=async function(e){
+      const wb=XLSX.read(e.target.result,{type:'array'});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const rows=XLSX.utils.sheet_to_json(ws,{header:1});
+      const campaigns=platform==='tiktok'?mapTTAdRows(rows):mapMetaAdRows(rows);
+      await saveAdCampaigns(platform,campaigns);
+    };
+    reader.readAsArrayBuffer(file);
+  } else {
+    const reader=new FileReader();
+    reader.onload=async function(e){
+      let text=e.target.result;
+      if(text.charCodeAt(0)===0xFEFF)text=text.slice(1);
+      const rows=parseCSVFull(text);
+      const campaigns=platform==='tiktok'?mapTTAdRows(rows):mapMetaAdRows(rows);
+      await saveAdCampaigns(platform,campaigns);
+    };
+    reader.readAsText(file);
+  }
+}
+
+async function saveAdCampaigns(platform,campaigns){
+  const k=mk();if(!k)return;
+  if(!S.data[k])S.data[k]=em();
+  S.data[k].ads[platform].campaigns=campaigns;
+  S.data[k].ads[platform].uploaded=true;
+  await saveCur();render();
+}
+
+// ── RFC 4180 CSV PARSER ──
 function parseCSVFull(text){
-  const rows=[];
-  let row=[],cell='',inQ=false;
+  const rows=[];let row=[],cell='',inQ=false;
   for(let i=0;i<text.length;i++){
     const ch=text[i],nx=text[i+1];
     if(inQ){
       if(ch==='"'&&nx==='"'){cell+='"';i++;}
       else if(ch==='"'){inQ=false;}
-      else{cell+=ch;}
-    } else {
-      if(ch==='"'){inQ=true;}
+      else cell+=ch;
+    }else{
+      if(ch==='"')inQ=true;
       else if(ch===','){row.push(cell.trim());cell='';}
       else if(ch==='\r'&&nx==='\n'){row.push(cell.trim());rows.push(row);row=[];cell='';i++;}
       else if(ch==='\n'||ch==='\r'){row.push(cell.trim());rows.push(row);row=[];cell='';}
-      else{cell+=ch;}
+      else cell+=ch;
     }
   }
   if(cell||row.length)row.push(cell.trim()),rows.push(row);
@@ -640,10 +764,7 @@ function mapFBRows(rows){
   const headers=rows[0].map(h=>h.toLowerCase());
   const fi=(kws)=>{for(const kw of kws){const i=headers.findIndex(h=>h.includes(kw));if(i>=0)return i;}return -1;};
   const cm={title:fi(['title','description']),permalink:fi(['permalink']),views:fi(['views']),reach:fi(['reach']),reactions:fi(['reactions']),comments:fi(['comments']),shares:fi(['shares']),clicks:fi(['total clicks','clicks']),postType:fi(['post type'])};
-  // ensure reactions is pure col, not 'reactions, comments and shares'
-  if(cm.reactions>=0&&headers[cm.reactions].includes('reactions, comments')){
-    cm.reactions=headers.findIndex(h=>h==='reactions');
-  }
+  if(cm.reactions>=0&&headers[cm.reactions].includes('reactions, comments'))cm.reactions=headers.findIndex(h=>h==='reactions');
   const posts=[];
   for(let i=1;i<rows.length;i++){
     const row=rows[i];if(row.every(c=>!c))continue;
@@ -673,18 +794,46 @@ function mapTTRows(rows){
   if(rows.length<2)return[];
   const headers=rows[0].map(h=>h.toLowerCase());
   const fi=(kws)=>{for(const kw of kws){const i=headers.findIndex(h=>h.includes(kw));if(i>=0)return i;}return -1;};
-  const cm={title:fi(['video title','title','description']),permalink:fi(['video link','permalink','link','url']),views:fi(['total views','views']),likes:fi(['total likes','likes']),comments:fi(['total comments','comments']),shares:fi(['total shares','shares']),postTime:fi(['post time','publish time','time'])};
+  const cm={title:fi(['video title','title','description']),permalink:fi(['video link','permalink','link','url']),views:fi(['total views','views']),likes:fi(['total likes','likes']),comments:fi(['total comments','comments']),shares:fi(['total shares','shares'])};
   const posts=[];
   for(let i=1;i<rows.length;i++){
     const row=rows[i];if(row.every(c=>!c))continue;
     const g=(col)=>col>=0&&col<row.length?row[col]:'';
-    const p={title:g(cm.title).replace(/\n/g,' ').trim(),permalink:g(cm.permalink),views:pN(g(cm.views)),reach:0,reactions:pN(g(cm.likes)),likes:pN(g(cm.likes)),comments:pN(g(cm.comments)),shares:pN(g(cm.shares)),clicks:0,saves:0,postType:'Video'};
+    const p={title:g(cm.title).replace(/\n/g,' ').trim(),permalink:g(cm.permalink),views:pN(g(cm.views)),likes:pN(g(cm.likes)),comments:pN(g(cm.comments)),shares:pN(g(cm.shares)),postType:'Video'};
     if(p.views>0||p.title)posts.push(p);
   }
   return posts;
 }
 
-function pN(v){if(!v||v==='—')return 0;const n=parseFloat(String(v).replace(/,/g,''));return isNaN(n)?0:n;}
+function mapMetaAdRows(rows){
+  if(rows.length<2)return[];
+  const headers=rows[0].map(h=>String(h).toLowerCase());
+  const fi=(kws)=>{for(const kw of kws){const i=headers.findIndex(h=>h.includes(kw));if(i>=0)return i;}return -1;};
+  const cm={name:fi(['campaign name']),spend:fi(['amount spent']),impressions:fi(['impressions']),reach:fi(['reach']),clicks:fi(['link clicks']),ctr:fi(['ctr (link click']),results:fi(['results']),costPerResult:fi(['cost per results','cost per result'])};
+  const camps=[];
+  for(let i=1;i<rows.length;i++){
+    const row=rows[i];if(row.every(c=>!c||c===''||c===undefined))continue;
+    const g=(col)=>col>=0&&col<row.length?String(row[col]||''):'';
+    const c={name:g(cm.name),spend:pN(g(cm.spend)),impressions:pN(g(cm.impressions)),reach:pN(g(cm.reach)),clicks:pN(g(cm.clicks)),ctr:pN(g(cm.ctr)),results:pN(g(cm.results)),costPerResult:pN(g(cm.costPerResult))};
+    if(c.name||c.spend)camps.push(c);
+  }
+  return camps;
+}
+
+function mapTTAdRows(rows){
+  if(rows.length<2)return[];
+  const headers=rows[0].map(h=>String(h).toLowerCase());
+  const fi=(kws)=>{for(const kw of kws){const i=headers.findIndex(h=>h.includes(kw));if(i>=0)return i;}return -1;};
+  const cm={name:fi(['campaign name']),spend:fi(['cost']),impressions:fi(['impressions']),clicks:fi(['clicks (destination)']),ctr:fi(['ctr (destination)']),conversions:fi(['conversions']),costPerConv:fi(['cost per conversion'])};
+  const camps=[];
+  for(let i=1;i<rows.length;i++){
+    const row=rows[i];if(row.every(c=>!c||c===''||c===undefined||c==='-'))continue;
+    const g=(col)=>col>=0&&col<row.length?String(row[col]||''):'';
+    const c={name:g(cm.name),spend:pN(g(cm.spend)),impressions:pN(g(cm.impressions)),clicks:pN(g(cm.clicks)),ctr:pN(g(cm.ctr))*100,results:pN(g(cm.conversions)),costPerResult:pN(g(cm.costPerConv))};
+    if(c.name&&c.name!=='-'||(c.spend>0))camps.push(c);
+  }
+  return camps;
+}
 
 // ── INIT ──
 async function init(){
