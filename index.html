@@ -287,10 +287,22 @@ document.getElementById('prevMo').onclick=()=>{S.cur=Math.max(0,S.cur-1);render(
 document.getElementById('nextMo').onclick=()=>{S.cur=Math.min(S.months.length-1,S.cur+1);render();};
 document.getElementById('addMoBtn').onclick=addMonth;
 function addMonth(){
-  if(!S.months.length){const n=new Date();S.months.push({y:n.getFullYear(),m:n.getMonth()+1});S.cur=0;render();return;}
-  const last=S.months[S.months.length-1];let m=last.m+1,y=last.y;if(m>12){m=1;y++;}
+  const input=prompt('Add month (MM-YYYY):',(() => {
+    if(!S.months.length){const n=new Date();return pad(n.getMonth()+2)+'-'+n.getFullYear();}
+    const last=S.months[S.months.length-1];
+    let m=last.m+1,y=last.y;if(m>12){m=1;y++;}
+    return pad(m)+'-'+y;
+  })());
+  if(!input)return;
+  const parts=input.split('-');
+  if(parts.length!==2)return alert('Format invalid. Folosește MM-YYYY');
+  const m=parseInt(parts[0]),y=parseInt(parts[1]);
+  if(isNaN(m)||isNaN(y)||m<1||m>12)return alert('Dată invalidă');
   if(S.months.find(x=>x.y===y&&x.m===m)){S.cur=S.months.findIndex(x=>x.y===y&&x.m===m);render();return;}
-  S.months.push({y,m});S.cur=S.months.length-1;render();
+  S.months.push({y,m});
+  S.months.sort((a,b)=>a.y!==b.y?a.y-b.y:a.m-b.m);
+  S.cur=S.months.findIndex(x=>x.y===y&&x.m===m);
+  render();
 }
 
 // ── RENDER ──
